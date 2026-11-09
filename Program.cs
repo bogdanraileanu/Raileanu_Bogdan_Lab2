@@ -4,8 +4,23 @@ using Raileanu_Bogdan_Lab2.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy =>
+    policy.RequireRole("Admin"));
+});
+
+
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AuthorizeFolder("/BookPages");
+    options.Conventions.AllowAnonymousToPage("/BookPages/Index");
+    options.Conventions.AllowAnonymousToPage("/BookPages/Details");
+    options.Conventions.AuthorizeFolder("/MemberPages", "AdminPolicy");
+    options.Conventions.AuthorizeFolder("/PublisherPages", "AdminPolicy");
+    options.Conventions.AuthorizeFolder("/CategoryPages", "AdminPolicy");
+});
 
 builder.Services.AddDbContext<Raileanu_Bogdan_Lab2Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Raileanu_Bogdan_Lab2Context") ?? throw new InvalidOperationException("Connection string 'Raileanu_Bogdan_Lab2Context' not found."),
@@ -22,6 +37,7 @@ builder.Services.AddDbContext<LibraryIdentityContext>(options =>
     }));
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<LibraryIdentityContext>();
 
 var app = builder.Build();

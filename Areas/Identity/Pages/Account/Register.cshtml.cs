@@ -128,6 +128,7 @@ public class RegisterModel : PageModel
         {
             _logger.LogInformation("User created a new account with password.");
 
+            var role = await _userManager.AddToRoleAsync(user, "User");
             Member.Email = Input.Email;
             _context.Member.Add(Member);
             await _context.SaveChangesAsync();
